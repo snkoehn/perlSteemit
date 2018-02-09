@@ -9,4 +9,27 @@ has url     => 'steemd.minnowsupportproject.org';
 has ua      =>  sub { Mojo::UserAgent->new };
 
 
+sub _request {
+   my( $self, $api, $method, @params ) = @_;
+   my $result = decode_json $self->ua->get( $self->url, json => {
+      jsonrpc => '2.0',
+      method  => 'call',
+      params  => [$api,$method,[@params]],
+      id      => int rand 100,
+   })->result->body;
+
+   return $result->{result} if $result->{result};
+   if( my $error = $result->{error} ){
+      die $error->{message};
+   }
+   #ok no error no result
+   require Data::Dumper;
+   die "unexpected api result: ".Data::Dumper::Dumper( $result );
+}
+
+sub get_accounts {
+   my( $self, @params ) = @_;
+   return $self->_request('database_api','get_accounts',@params);
+}
+
 1;

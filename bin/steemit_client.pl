@@ -10,3 +10,7 @@ my $steem = Steemit->new;
 
 say "Initialized Steemit client with url ".$steem->url;
 
+
+use Data::Dumper;
+
+say Dumper( $steem->get_accounts(['utopian-io']));
