@@ -1,4 +1,5 @@
 requires 'Modern::Perl', undef;
 requires 'Mojo::Base',   undef;
 requires 'Test::More',   undef;
+requires 'IO::Socket::SSL'   undef;
 

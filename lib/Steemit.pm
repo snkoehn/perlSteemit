@@ -5,18 +5,22 @@ use Mojo::Base -base;
 use Mojo::UserAgent;
 use Mojo::JSON qw(decode_json encode_json);
 
-has url     => 'steemd.minnowsupportproject.org';
+has url     => 'https://rpc.steemliberator.com';
 has ua      =>  sub { Mojo::UserAgent->new };
 
 
 sub _request {
    my( $self, $api, $method, @params ) = @_;
-   my $result = decode_json $self->ua->get( $self->url, json => {
+   my $response = $self->ua->get( $self->url, json => {
       jsonrpc => '2.0',
       method  => 'call',
       params  => [$api,$method,[@params]],
       id      => int rand 100,
-   })->result->body;
+   })->result;
+
+   die "error while requesting steemd ". $response->to_string unless $response->is_success;
+
+   my $result   = decode_json $response->body;
 
    return $result->{result} if $result->{result};
    if( my $error = $result->{error} ){
