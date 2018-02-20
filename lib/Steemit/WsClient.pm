@@ -6,11 +6,11 @@ Steemit::WsClient - perl lirary for interacting with the steemit websocket servi
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 
 =head1 SYNOPSIS
@@ -21,10 +21,10 @@ Perhaps a little code snippet.
 
     use Steemit::WsClient;
 
-    my $foo = Steemit->new();
-    my $steem = Steemit->new( url => 'https://some.steemit.d.node.address');
+    my $foo = Steemit::WsClient->new();
+    my $steem = Steemit::WsClient->new( url => 'https://some.steemit.d.node.address');
 
-    say "Initialized Steemit client with url ".$steem->url;
+    say "Initialized Steemit::WsClient client with url ".$steem->url;
 
     #get the last 99 discussions with the tag utopian-io
     #truncate the body since we dont care here
@@ -51,6 +51,11 @@ Perhaps a little code snippet.
     say "Average reputation of the last 99 utopian authors: ". ( int( $reputation_sum / scalar(@$authors) )  / 100 );
 
 
+=head1 DEPENDENCIES
+
+through you will need equivalent packages to libssl-dev libssl1.0-dev zlib1g-dev libgmp-dev 
+
+
 =head1 SUBROUTINES/METHODS
 
 =cut
@@ -64,7 +69,9 @@ has url     => 'https://steemd.steemitstage.com';
 has ua      =>  sub { Mojo::UserAgent->new };
 
 
-=head2 installes all database api methods of the steemit api
+=head2 all database api methods of the steemit api
+
+L<https://github.com/steemit/steem/blob/master/libraries/app/database_api.cpp>
 
       get_miner_queue
       lookup_account_names
@@ -255,15 +262,11 @@ sub _get_api_definition {
       database_api          => [@database_api],
    )
 }
-sub function1 {
-}
 
-=head2 function2
+=head1 REPOSITORY
 
-=cut
+L<https://github.com/snkoehn/perlSteemit>
 
-sub function2 {
-}
 
 =head1 AUTHOR
 
@@ -272,7 +275,7 @@ snkoehn, C<< <koehn.sebastian at gmail.com> >>
 =head1 BUGS
 
 Please report any bugs or feature requests to C<bug-steemit at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Steemit>.  I will be notified, and then you'll
+the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Steemit::WsClient>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
 
@@ -282,7 +285,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Steemit
+    perldoc Steemit::WsClient
 
 
 You can also look for information at:
@@ -291,19 +294,19 @@ You can also look for information at:
 
 =item * RT: CPAN's request tracker (report bugs here)
 
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Steemit>
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Steemit::WsClient>
 
 =item * AnnoCPAN: Annotated CPAN documentation
 
-L<http://annocpan.org/dist/Steemit>
+L<http://annocpan.org/dist/Steemit::WsClient>
 
 =item * CPAN Ratings
 
-L<http://cpanratings.perl.org/d/Steemit>
+L<http://cpanratings.perl.org/d/Steemit::WsClient>
 
 =item * Search CPAN
 
-L<http://search.cpan.org/dist/Steemit/>
+L<http://search.cpan.org/dist/Steemit::WsClient/>
 
 =back
 
@@ -354,4 +357,4 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =cut
 
-1; # End of Steemit
+1; # End of Steemit::WsClient
