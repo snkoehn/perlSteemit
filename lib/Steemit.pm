@@ -5,7 +5,7 @@ use Mojo::Base -base;
 use Mojo::UserAgent;
 use Mojo::JSON qw(decode_json encode_json);
 
-has url     => 'https://rpc.steemliberator.com';
+has url     => 'https://steemd.steemitstage.com';
 has ua      =>  sub { Mojo::UserAgent->new };
 
 
