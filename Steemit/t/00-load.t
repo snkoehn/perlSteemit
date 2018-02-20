@@ -6,9 +6,7 @@ use Test::More;
 
 plan tests => 2;
 
-BEGIN {
-    use_ok( 'Steemit' ) || print "Bail out!\n";
-}
+use_ok( 'Steemit' ) || print "Bail out!\n";
 
 diag( "Testing Steemit $Steemit::VERSION, Perl $], $^X" );
 
