@@ -8,7 +8,7 @@ my $builder = Module::Build->new(
     license             => 'artistic_2',
     dist_author         => q{snkoehn <koehn.sebastian@gmail.com>},
     dist_version_from   => 'lib/Steemit/WsClient.pm',
-    release_status      => 'testing',
+    release_status      => 'stable',
     configure_requires => {
         'Module::Build' => '0',
     },

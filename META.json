@@ -35,15 +35,15 @@
    "provides" : {
       "Steemit::WsClient" : {
          "file" : "lib/Steemit/WsClient.pm",
-         "version" : "0.02"
+         "version" : "0.03"
       }
    },
-   "release_status" : "testing",
+   "release_status" : "stable",
    "resources" : {
       "license" : [
          "http://opensource.org/licenses/artistic-license-2.0.php"
       ]
    },
-   "version" : "0.02",
+   "version" : "0.03",
    "x_serialization_backend" : "JSON::PP version 2.27400_02"
 }
