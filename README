@@ -1,11 +1,11 @@
-[1mNAME[0m
-    Steemit::WsClient - perl lirary for interacting with the steemit websocket
-    services!
+NAME
+    Steemit::WsClient - perl lirary for interacting with the steemit
+    websocket services!
 
-[1mVERSION[0m
+VERSION
     Version 0.04
 
-[1mSYNOPSIS[0m
+SYNOPSIS
     Quick summary of what the module does.
 
     Perhaps a little code snippet.
@@ -41,14 +41,14 @@
 
         say "Average reputation of the last 99 utopian authors: ". ( int( $reputation_sum / scalar(@$authors) )  / 100 );
 
-[1mDEPENDENCIES[0m
+DEPENDENCIES
     through you will need equivalent packages to libssl-dev libssl1.0-dev
     zlib1g-dev libgmp-dev
 
-[1mSUBROUTINES/METHODS[0m
-  [1mall database api methods of the steemit api[0m
-    <https://github.com/steemit/steem/blob/master/libraries/app/database_api.c
-    pp>
+SUBROUTINES/METHODS
+  all database api methods of the steemit api
+    <https://github.com/steemit/steem/blob/master/libraries/app/database_api
+    .cpp>
 
           get_miner_queue
           lookup_account_names
@@ -120,20 +120,20 @@
           get_state
           get_withdraw_routes
 
-[1mREPOSITORY[0m
+REPOSITORY
     <https://github.com/snkoehn/perlSteemit>
 
-[1mAUTHOR[0m
+AUTHOR
     snkoehn, "<koehn.sebastian at gmail.com>"
 
-[1mBUGS[0m
+BUGS
     Please report any bugs or feature requests to "bug-steemit at
     rt.cpan.org", or through the web interface at
-    <http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Steemit::WsClient>. I will
-    be notified, and then you'll automatically be notified of progress on your
-    bug as I make changes.
+    <http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Steemit::WsClient>. I
+    will be notified, and then you'll automatically be notified of progress
+    on your bug as I make changes.
 
-[1mSUPPORT[0m
+SUPPORT
     You can find documentation for this module with the perldoc command.
 
         perldoc Steemit::WsClient
@@ -156,8 +156,8 @@
 
         <http://search.cpan.org/dist/Steemit::WsClient/>
 
-[1mACKNOWLEDGEMENTS[0m
-[1mLICENSE AND COPYRIGHT[0m
+ACKNOWLEDGEMENTS
+LICENSE AND COPYRIGHT
     Copyright 2018 snkoehn.
 
     This program is free software; you can redistribute it and/or modify it
@@ -168,31 +168,31 @@
 
     Any use, modification, and distribution of the Standard or Modified
     Versions is governed by this Artistic License. By using, modifying or
-    distributing the Package, you accept this license. Do not use, modify, or
-    distribute the Package, if you do not accept this license.
+    distributing the Package, you accept this license. Do not use, modify,
+    or distribute the Package, if you do not accept this license.
 
-    If your Modified Version has been derived from a Modified Version made by
-    someone other than you, you are nevertheless required to ensure that your
-    Modified Version complies with the requirements of this license.
+    If your Modified Version has been derived from a Modified Version made
+    by someone other than you, you are nevertheless required to ensure that
+    your Modified Version complies with the requirements of this license.
 
     This license does not grant you the right to use any trademark, service
     mark, tradename, or logo of the Copyright Holder.
 
-    This license includes the non-exclusive, worldwide, free-of-charge patent
-    license to make, have made, use, offer to sell, sell, import and otherwise
-    transfer the Package with respect to any patent claims licensable by the
-    Copyright Holder that are necessarily infringed by the Package. If you
-    institute patent litigation (including a cross-claim or counterclaim)
-    against any party alleging that the Package constitutes direct or
-    contributory patent infringement, then this Artistic License to you shall
-    terminate on the date that such litigation is filed.
+    This license includes the non-exclusive, worldwide, free-of-charge
+    patent license to make, have made, use, offer to sell, sell, import and
+    otherwise transfer the Package with respect to any patent claims
+    licensable by the Copyright Holder that are necessarily infringed by the
+    Package. If you institute patent litigation (including a cross-claim or
+    counterclaim) against any party alleging that the Package constitutes
+    direct or contributory patent infringement, then this Artistic License
+    to you shall terminate on the date that such litigation is filed.
 
     Disclaimer of Warranty: THE PACKAGE IS PROVIDED BY THE COPYRIGHT HOLDER
     AND CONTRIBUTORS "AS IS' AND WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
     THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
     PURPOSE, OR NON-INFRINGEMENT ARE DISCLAIMED TO THE EXTENT PERMITTED BY
-    YOUR LOCAL LAW. UNLESS REQUIRED BY LAW, NO COPYRIGHT HOLDER OR CONTRIBUTOR
-    WILL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
-    DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THE PACKAGE, EVEN IF ADVISED
-    OF THE POSSIBILITY OF SUCH DAMAGE.
+    YOUR LOCAL LAW. UNLESS REQUIRED BY LAW, NO COPYRIGHT HOLDER OR
+    CONTRIBUTOR WILL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR
+    CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THE PACKAGE,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
