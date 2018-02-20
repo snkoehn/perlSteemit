@@ -16,7 +16,7 @@ my $builder = Module::Build->new(
         'Test::More' => '0',
     },
     requires => {
-        'Modern::Perl'     => '2',
+        'Modern::Perl'     => '0',
         'Mojo::Base'       => '0',
         'IO::Socket::SSL'  => '0',
     },
