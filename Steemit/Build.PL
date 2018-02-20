@@ -16,9 +16,9 @@ my $builder = Module::Build->new(
         'Test::More' => '0',
     },
     requires => {
-        'Modern::Perl'     => '2';
-        'Mojo::Base'       => '0';
-        'IO::Socket::SSL'  => '0';
+        'Modern::Perl'     => '2',
+        'Mojo::Base'       => '0',
+        'IO::Socket::SSL'  => '0',
     },
     add_to_cleanup     => [ 'Steemit-*' ],
 );
