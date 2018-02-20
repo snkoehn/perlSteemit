@@ -6,12 +6,12 @@ use Test::More;
 
 plan tests => 2;
 
-use_ok( 'Steemit' ) || print "Bail out!\n";
+use_ok( 'Steemit::WsClient' ) || print "Bail out!\n";
 
-diag( "Testing Steemit $Steemit::VERSION, Perl $], $^X" );
+diag( "Testing Steemit $Steemit::WsClient::VERSION, Perl $], $^X" );
 
-my $steem = Steemit->new;
+my $steem = Steemit::WsClient->new;
 
-isa_ok( $steem, 'Steemit', 'constructor will return a Steemit object');
+isa_ok( $steem, 'Steemit::WsClient', 'constructor will return a Steemit object');
 
 

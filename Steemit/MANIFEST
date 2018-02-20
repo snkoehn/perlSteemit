@@ -1,6 +1,6 @@
 Build.PL
 Changes
-lib/Steemit.pm
+lib/Steemit/WsClient.pm
 MANIFEST			This list of files
 MANIFEST.SKIP
 README

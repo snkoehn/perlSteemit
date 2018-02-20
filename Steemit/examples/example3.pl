@@ -3,9 +3,9 @@ use Modern::Perl;
 use Data::Dumper;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
-use Steemit;
+use Steemit::WsClient;
 
-my $steem = Steemit->new;
+my $steem = Steemit::WsClient->new;
 say "Initialized Steemit client with url ".$steem->url;
 
 #get the last 99 discussions with the tag utopian-io

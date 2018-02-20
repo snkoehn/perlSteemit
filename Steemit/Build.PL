@@ -4,11 +4,11 @@ use warnings;
 use Module::Build;
 
 my $builder = Module::Build->new(
-    module_name         => 'Steemit',
+    module_name         => 'Steemit::WsClient',
     license             => 'artistic_2',
     dist_author         => q{snkoehn <koehn.sebastian@gmail.com>},
-    dist_version_from   => 'lib/Steemit.pm',
-    release_status      => 'stable',
+    dist_version_from   => 'lib/Steemit/WsClient.pm',
+    release_status      => 'testing',
     configure_requires => {
         'Module::Build' => '0',
     },

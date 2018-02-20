@@ -1,8 +1,8 @@
-package Steemit;
+package Steemit::WsClient;
 
 =head1 NAME
 
-Steemit - perl lirary for interacting with the steemit websocket services!
+Steemit::WsClient - perl lirary for interacting with the steemit websocket services!
 
 =head1 VERSION
 
@@ -19,7 +19,7 @@ Quick summary of what the module does.
 
 Perhaps a little code snippet.
 
-    use Steemit;
+    use Steemit::WsClient;
 
     my $foo = Steemit->new();
     my $steem = Steemit->new( url => 'https://some.steemit.d.node.address');
