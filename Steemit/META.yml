@@ -16,12 +16,12 @@ name: Steemit-WsClient
 provides:
   Steemit::WsClient:
     file: lib/Steemit/WsClient.pm
-    version: '0.01'
+    version: '0.02'
 requires:
   IO::Socket::SSL: '0'
   Modern::Perl: '0'
   Mojo::Base: '0'
 resources:
   license: http://opensource.org/licenses/artistic-license-2.0.php
-version: '0.01'
+version: '0.02'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

@@ -35,7 +35,7 @@
    "provides" : {
       "Steemit::WsClient" : {
          "file" : "lib/Steemit/WsClient.pm",
-         "version" : "0.01"
+         "version" : "0.02"
       }
    },
    "release_status" : "testing",
@@ -44,6 +44,6 @@
          "http://opensource.org/licenses/artistic-license-2.0.php"
       ]
    },
-   "version" : "0.01",
+   "version" : "0.02",
    "x_serialization_backend" : "JSON::PP version 2.27400_02"
 }
