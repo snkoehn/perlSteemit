@@ -19,6 +19,10 @@ my $builder = Module::Build->new(
         'Modern::Perl'     => '0',
         'Mojo::Base'       => '0',
         'IO::Socket::SSL'  => '0',
+        'Math::BigInt'     => '0',
+    },
+    recommends => {
+        'Math::BigInt::GMP' => '0',
     },
     add_to_cleanup     => [ 'Steemit-*' ],
 );
