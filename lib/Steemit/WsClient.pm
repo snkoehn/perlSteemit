@@ -53,7 +53,7 @@ Perhaps a little code snippet.
 
 =head1 DEPENDENCIES
 
-through you will need equivalent packages to libssl-dev libssl1.0-dev zlib1g-dev libgmp-dev 
+through you will need equivalent packages to libssl-dev libssl1.0-dev zlib1g-dev libgmp-dev
 
 
 =head1 SUBROUTINES/METHODS
