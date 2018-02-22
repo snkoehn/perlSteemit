@@ -64,9 +64,12 @@ use Modern::Perl;
 use Mojo::Base -base;
 use Mojo::UserAgent;
 use Mojo::JSON qw(decode_json encode_json);
+use Data::Dumper;
 
-has url     => 'https://steemd.steemitstage.com';
-has ua      =>  sub { Mojo::UserAgent->new };
+has url                => 'https://steemd.steemitstage.com';
+has ua                 =>  sub { Mojo::UserAgent->new };
+has posting_key        => undef;
+has plain_posting_key  => \&_transform_private_key;
 
 
 =head2 all database api methods of the steemit api
@@ -262,6 +265,34 @@ sub _get_api_definition {
       database_api          => [@database_api],
    )
 }
+
+
+sub _transform_private_key {
+   my( $self ) = @_;
+   die "posting_key missing" unless( $self->posting_key );
+
+   my $base58 = $self->posting_key;
+
+   require Steemit::Base58;
+   my $binary = Steemit::Base58::decode_base58( $base58 );
+
+
+   my $version            = substr( $binary, 0, 1 );
+   my $binary_private_key = substr( $binary, 1, -4);
+   my $checksum           = substr( $binary, -4);
+   die "invalid version in wif ( 0x80 needed ) " unless $version eq  pack "H*", '80';
+
+   require Digest::SHA;
+
+   my $generated_checksum = substr( Digest::SHA::sha256( Digest::SHA::sha256( $version.$binary_private_key )), 0, 4 );
+
+   die "invalid checksum " unless $generated_checksum eq $checksum;
+
+   return $binary_private_key;
+}
+
+
+
 
 =head1 REPOSITORY
 
