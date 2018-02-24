@@ -291,6 +291,49 @@ sub _transform_private_key {
    return $binary_private_key;
 }
 
+sub _serialize_transaction_message  {
+   my ($self,$transaction) = @_;
+
+   my $serialized_transaction;
+
+   $serialized_transaction .= pack 'v', $transaction->{ref_block_num};
+
+   $serialized_transaction .= pack 'V', $transaction->{ref_block_prefix};
+
+   require Date::Calc;
+   #2016-08-08T12:24:17
+   my @dates = split /\D/, $transaction->{expiration} ;
+   my $epoch = Date::Calc::Date_to_Time( @dates);
+
+   $serialized_transaction .= pack 'L', $epoch;
+
+   $serialized_transaction .= pack "C", scalar( @{ $transaction->{operations} });
+
+   my $operation_count = 0;
+   for my $operation ( @{ $transaction->{operations} } ) {
+
+      my ($operation_name,$operations_parameters) = @$operation;
+
+      ##operation id
+      $serialized_transaction .= pack "C", 0;
+
+      $serialized_transaction .= pack "C", length $operations_parameters->{voter};
+      $serialized_transaction .= pack "A*", $operations_parameters->{voter};
+
+      $serialized_transaction .= pack "C", length $operations_parameters->{author};
+      $serialized_transaction .= pack "A*", $operations_parameters->{author};
+
+      $serialized_transaction .= pack "C", length $operations_parameters->{permlink};
+      $serialized_transaction .= pack "A*", $operations_parameters->{permlink};
+
+      $serialized_transaction .= pack "s", $operations_parameters->{weight};
+   }
+   #extentions in case we realy need them at some point we will have to implement this is a less nive way ;)
+   die "extentions not supported" if $transaction->{extensions} and $transaction->{extensions}[0];
+   $serialized_transaction .= pack 'H*', '00';
+
+   return pack( 'H*', ( '0' x 64 )).$serialized_transaction;
+}
 
 
 
