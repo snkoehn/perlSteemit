@@ -6,7 +6,7 @@ use Test::More;
 use Data::Dumper;
 use Math::EllipticCurve::Prime;
 
-plan tests => 5;
+plan tests => 4;
 
 use_ok( 'Steemit::Crypto' ) || print "Bail out!\n";
 

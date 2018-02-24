@@ -5,7 +5,7 @@ use warnings;
 use Test::More;
 use Data::Dumper;
 
-plan tests => 5;
+plan tests => 2;
 
 use_ok( 'Steemit::WsClient' ) || print "Bail out!\n";
 
@@ -32,7 +32,7 @@ use Mojo::JSON qw(decode_json encode_json);
 
 my $example_transaction_hash = decode_json ( $xerox_transaction_json );
 
-my $expected_serialisation_result = 'bd8c5fe26f45f179a8570100057865726f63057865726f6306706973746f6e102700';
+my $expected_serialisation_result = '0000000000000000000000000000000000000000000000000000000000000000bd8c5fe26f45f179a8570100057865726f63057865726f6306706973746f6e102700';
 
 my $created_serialisation_result  = $steem->_serialize_transaction_message( $example_transaction_hash );
 
