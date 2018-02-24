@@ -204,7 +204,6 @@ sub _get_api_definition {
       get_potential_signatures
       get_required_signatures
       get_order_book
-      get_key_references
       get_tags_used_by_author
       get_account_bandwidth
       get_replies_by_last_update
@@ -263,6 +262,7 @@ sub _get_api_definition {
 
    return (
       database_api          => [@database_api],
+      account_by_key_api    => [ qw( get_key_references )],
    )
 }
 
@@ -272,11 +272,7 @@ sub vote {
    my $permlink = $discussion->{permlink};
    my $author   = $discussion->{author};
    $weight   = $weight // 10000;
-   my $voter    = 'hoffmann';#FIXME finx out why i am by my key somehow
-
-   #ref_block_num = dynBCParams["head_block_number"] & 0xFFFF
-   #ref_block_prefix = struct.unpack_from("<I", unhexlify(dynBCParams["head_block_id"]), 4)[0]
-
+   my $voter = $self->get_key_references([$self->public_posting_key])->[0][0];
 
    my $properties = $self->get_dynamic_global_properties();
 
@@ -319,6 +315,25 @@ sub vote {
    $transaction->{signatures} = [ join('', map { unpack 'H*', $_->as_bytes} ($i,$r,$s ) ) ];
 
    $self->_request('network_broadcast_api','broadcast_transaction_synchronous',$transaction);
+}
+
+sub public_posting_key {
+   my( $self ) = @_;
+   unless( $self->{public_posting_key} ){
+      require Steemit::Crypto;
+      my $bin_pubkey = Steemit::Crypto::get_compressed_public_key( Math::BigInt->from_bytes( $self->plain_posting_key ) );
+      #TODO use the STM from dynamic lookup in get_config or somewhere
+      require Crypt::RIPEMD160;
+      my $rip = Crypt::RIPEMD160->new;
+      $rip->reset;
+      $rip->add($bin_pubkey);
+      my $checksum = $rip->digest;
+      $rip->reset;
+      $rip->add('');
+      $self->{public_posting_key} = "STM".Steemit::Base58::encode_base58($bin_pubkey.substr($checksum,0,4));
+   }
+
+   return $self->{public_posting_key}
 }
 
 
