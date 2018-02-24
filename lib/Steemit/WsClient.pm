@@ -266,6 +266,61 @@ sub _get_api_definition {
    )
 }
 
+sub vote {
+   my( $self, $discussion, $weight ) = @_;
+
+   my $permlink = $discussion->{permlink};
+   my $author   = $discussion->{author};
+   $weight   = $weight // 10000;
+   my $voter    = 'hoffmann';#FIXME finx out why i am by my key somehow
+
+   #ref_block_num = dynBCParams["head_block_number"] & 0xFFFF
+   #ref_block_prefix = struct.unpack_from("<I", unhexlify(dynBCParams["head_block_id"]), 4)[0]
+
+
+   my $properties = $self->get_dynamic_global_properties();
+
+   my $block_number  = $properties->{last_irreversible_block_num};
+   my $block_details = $self->get_block( $block_number );
+
+   my $ref_block_id  = $block_details->{previous},
+
+   my $time          = $properties->{time};
+   #my $expiration = "2018-02-24T17:00:51";#TODO dynamic date
+   my ($year,$month,$day, $hour,$min,$sec) = split /\D/, $time;
+   require Date::Calc;
+   my $epoch = Date::Calc::Date_to_Time($year,$month,$day, $hour,$min,$sec);
+   ($year,$month,$day, $hour,$min,$sec) = Date::Calc::Time_to_Date($epoch + 600 );
+   my $expiration = "$year-$month-$day".'T'."$hour:$min:$sec";
+
+   my $transaction = {
+      ref_block_num => ( $block_number - 1 )& 0xffff,
+      ref_block_prefix => unpack( "xxxxV", pack('H*',$ref_block_id)),
+      expiration       => $expiration,
+      operations       => [[
+         vote => {
+            voter => $voter,
+            author => $author,
+            permlink => $permlink,
+            weight   => $weight,
+         }
+      ]],
+      extensions => [],
+      signatures => [],
+   };
+   my $serialized_transaction = $self->_serialize_transaction_message( $transaction );
+
+   my $bin_private_key = $self->plain_posting_key;
+   require Steemit::Crypto;
+   my ( $r, $s, $i ) = Steemit::Crypto::ecdsa_sign( $serialized_transaction, Math::BigInt->from_bytes( $bin_private_key ) );
+   $i += 4;
+   $i += 27;
+
+   $transaction->{signatures} = [ join('', map { unpack 'H*', $_->as_bytes} ($i,$r,$s ) ) ];
+
+   $self->_request('network_broadcast_api','broadcast_transaction_synchronous',$transaction);
+}
+
 
 sub _transform_private_key {
    my( $self ) = @_;
@@ -283,7 +338,6 @@ sub _transform_private_key {
    die "invalid version in wif ( 0x80 needed ) " unless $version eq  pack "H*", '80';
 
    require Digest::SHA;
-
    my $generated_checksum = substr( Digest::SHA::sha256( Digest::SHA::sha256( $version.$binary_private_key )), 0, 4 );
 
    die "invalid checksum " unless $generated_checksum eq $checksum;
