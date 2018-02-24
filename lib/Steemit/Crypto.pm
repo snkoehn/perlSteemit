@@ -7,6 +7,24 @@ use Carp;
 my $curve = Math::EllipticCurve::Prime->from_name('secp256k1');
 
 
+sub get_recovery_factor {
+   my ( $x,$y ) = @_;
+   my $curve = Math::EllipticCurve::Prime->from_name('secp256k1');
+   my ($p, $a, $b) = ($curve->p, $curve->a, $curve->b);
+   $x = $x->copy;
+   $y = $y->copy;
+
+   my $yr = ($x->bmodpow(3,$p)+$a*$x+$b)->bmodpow(($p+1)/4,$p);
+   if( $y eq $yr ){
+      return $yr%2;
+   }
+   $yr = $p - $y;
+   if( $y eq $yr ){
+      return ( $yr%2 + 1 ) % 2;
+   }
+   confess "unable to determine recovery factor";
+}
+
 sub point_from_x {
    my ( $x,$i ) = @_;
    my $y = recover_y( $x, $i );
