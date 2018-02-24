@@ -23,6 +23,7 @@ my $builder = Module::Build->new(
         'Digest::SHA'      => '0',
         'Date::Calc'       => '0',
         'Math::EllipticCurve::Prime'  => '0',
+        'Crypt::RIPEMD160' => '0',
     },
     recommends => {
         'Math::BigInt::GMP' => '0',
