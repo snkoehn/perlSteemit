@@ -6,6 +6,23 @@ use Carp;
 
 my $curve = Math::EllipticCurve::Prime->from_name('secp256k1');
 
+sub get_compressed_public_key {
+   my( $key ) = @_;
+
+   my $Q = get_public_key_point( $key );
+   my $buffer;
+
+   if( $Q->y % 2 ){
+      $buffer = pack 'C', 0x03;
+   }else{
+      $buffer = pack 'C', 0x02;
+   }
+
+   $buffer .= pack( 'H*', "0" x (( length($curve->p->to_bytes) - length($Q->x->to_bytes) ) * 2 ));
+   $buffer .= $Q->x->to_bytes;
+
+   return $buffer;
+}
 
 sub get_recovery_factor {
    my ( $x,$y ) = @_;
