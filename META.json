@@ -1,7 +1,7 @@
 {
    "abstract" : "perl lirary for interacting with the steemit websocket services!",
    "author" : [
-      "snkoehn <koehn.sebastian@gmail.com>"
+      "snkoehn <snkoehn@cpan.com>"
    ],
    "dynamic_config" : 1,
    "generated_by" : "Module::Build version 0.4224",
@@ -25,8 +25,16 @@
          }
       },
       "runtime" : {
+         "recommends" : {
+            "Math::BigInt::GMP" : "0"
+         },
          "requires" : {
+            "Crypt::RIPEMD160" : "0",
+            "Date::Calc" : "0",
+            "Digest::SHA" : "0",
             "IO::Socket::SSL" : "0",
+            "Math::BigInt" : "0",
+            "Math::EllipticCurve::Prime" : "0",
             "Modern::Perl" : "0",
             "Mojo::Base" : "0"
          }

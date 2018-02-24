@@ -1,7 +1,7 @@
 ---
 abstract: 'perl lirary for interacting with the steemit websocket services!'
 author:
-  - 'snkoehn <koehn.sebastian@gmail.com>'
+  - 'snkoehn <snkoehn@cpan.com>'
 build_requires:
   Test::More: '0'
 configure_requires:
@@ -17,8 +17,15 @@ provides:
   Steemit::WsClient:
     file: lib/Steemit/WsClient.pm
     version: '0.04'
+recommends:
+  Math::BigInt::GMP: '0'
 requires:
+  Crypt::RIPEMD160: '0'
+  Date::Calc: '0'
+  Digest::SHA: '0'
   IO::Socket::SSL: '0'
+  Math::BigInt: '0'
+  Math::EllipticCurve::Prime: '0'
   Modern::Perl: '0'
   Mojo::Base: '0'
 resources:
