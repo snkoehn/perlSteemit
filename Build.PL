@@ -20,6 +20,9 @@ my $builder = Module::Build->new(
         'Mojo::Base'       => '0',
         'IO::Socket::SSL'  => '0',
         'Math::BigInt'     => '0',
+        'Digest::SHA'      => '0',
+        'Date::Calc'       => '0',
+        'Math::EllipticCurve::Prime'  => '0',
     },
     recommends => {
         'Math::BigInt::GMP' => '0',
