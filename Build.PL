@@ -13,13 +13,16 @@ my $builder = Module::Build->new(
         'Module::Build' => '0',
     },
     build_requires => {
-        'Test::More' => '0',
+        'Test::More'        => '0',
+        'Math::BigInt::GMP' => '0',
+        'Math::BigInt'      => '1.999810',
     },
     requires => {
+        'Math::BigInt::GMP' => '0',
+        'Math::BigInt'      => '1.999810',
         'Modern::Perl'     => '0',
         'Mojo::Base'       => '0',
         'IO::Socket::SSL'  => '0',
-        'Math::BigInt'     => '1.999810',
         'Digest::SHA'      => '0',
         'Date::Calc'       => '0',
         'Math::EllipticCurve::Prime'  => '0',
@@ -27,7 +30,6 @@ my $builder = Module::Build->new(
         'Bytes::Random::Secure' => '0.05',
     },
     recommends => {
-        'Math::BigInt::GMP' => '0',
     },
     add_to_cleanup     => [ 'Steemit-*' ],
 );
