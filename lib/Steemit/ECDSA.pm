@@ -14,9 +14,6 @@ sub ecdsa_sign {
   my $random = Bytes::Random::Secure->new( Bits => 128 );
   my $sha256 = Digest::SHA::sha256( $message );
   my $z = Math::BigInt->new(substr(Math::BigInt->from_bytes($sha256)->as_bin,0,$nlen));
-  #my $z = Math::BigInt->from_bytes( $sha256 );
-  #
-  #var N_OVER_TWO = secp256k1.n.shiftRight(1)
   my $N_OVER_TWO = $n->copy->brsft(1);
 
   my $is_canonical;
@@ -80,7 +77,6 @@ sub ecdsa_verify {
    my $nlen  = length($n->as_bin);
    my $sha256 = Digest::SHA::sha256( $message );
    my $z = Math::BigInt->new(substr(Math::BigInt->from_bytes($sha256)->as_bin,0,$nlen));
-   #my $z = Math::BigInt->from_bytes( $sha256 );
 
    my $w = $s->copy->bmodinv($n);
    my $u1 = ($w * $z)->bmod($n); my $u2 = ($w * $r)->bmod($n);
@@ -89,15 +85,10 @@ sub ecdsa_verify {
 }
 
 
-#function calcPubKeyRecoveryParam(curve, e, signature, Q) {
 sub calcPubKeyRecoveryParam {
   my ( $message, $r, $s, $Q ) = @_;
-  #for (var i = 0; i < 4; i++) {
   for ( my $i = 0; $i < 4; $i++ ){
-     #var Qprime = recoverPubKey(curve, e, signature, i)
      my $Qprime = recoverPubKey($message,$r,$s,$i);
-     #// 1.6.2 Verify Q
-     #if (Qprime.equals(Q)) {
      if( $Qprime->x == $Q->x and $Qprime->y == $Q->y ){
        return Math::BigInt->new($i);
      }
@@ -107,70 +98,35 @@ sub calcPubKeyRecoveryParam {
 }
 
 
-#function recoverPubKey(curve, e, signature, i) {
 sub recoverPubKey {
   my ( $message, $r, $s, $i ) = @_;
 
   $i //= 0;
   my $e = bytes_32_sha256($message );
   die "i must be 0 <= i < 4" unless $i >= 0 and $i < 4;
-  #assert.strictEqual(i & 3, i, 'Recovery param is more than two bits')
 
-  #var n = curve.n
-  #var G = curve.G
   my $n = $curve->n;
   my $G = $curve->g;
-
-  # var r = signature.r
-  #var s = signature.s
 
   die "invalid r" if $r < 0 or $r > $n;
   die "invalid s" if $s < 0 or $s > $n;
 
-  #assert(r.signum() > 0 && r.compareTo(n) < 0, 'Invalid r value')
-  #assert(s.signum() > 0 && s.compareTo(n) < 0, 'Invalid s value')
-
-  #// A set LSB signifies that the y-coordinate is odd
-  #var isYOdd = i & 1
   my $isYOdd = ( $i == 1 or $i == 3 );
 
-  #// The more significant bit specifies whether we should use the
-  #// first or second candidate key.
-  #var isSecondKey = i >> 1
-
   my $isSecondKey = $i > 2;
-
-  #// 1.1 Let x = r + jn
-  #var x = isSecondKey ? r.add(n) : r
-  #var R = curve.pointFromX(isYOdd, x)
 
   my $x = $isSecondKey ? ( $r + $n ) : $r;
   my $R = point_from_x( $r, $isYOdd );
 
-  #// 1.4 Check that nR is at infinity
-  #var nR = R.multiply(n)
-  #assert(curve.isInfinity(nR), 'nR is not a valid curve point')
-
   my $nR = $R->multiply( $n );
   die "nR is not a valid curve point " unless $nR->infinity;
 
-  #// Compute -e from e
-  #var eNeg = e.negate().mod(n)
-
   my $eNeg = $e->copy->bneg->bmod($n);
-
-  #// 1.6.1 Compute Q = r^-1 (sR -  eG)
-  #//               Q = r^-1 (sR + -eG)
-  #var rInv = r.modInverse(n)
 
   my $rInv = $r->copy->bmodinv($n);
 
-  #var Q = R.multiplyTwo(s, G, eNeg).multiply(rInv)
-  #curve.validate(Q)
-
   my $Q = $R->multiply( $s )->badd( $G->multiply($eNeg) )->multiply( $rInv );
 
-  #return Q
   return $Q;
 }
 
