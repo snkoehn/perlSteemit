@@ -6,11 +6,11 @@ Steemit::WsClient - perl lirary for interacting with the steemit websocket servi
 
 =head1 VERSION
 
-Version 0.04
+Version 0.05
 
 =cut
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 
 =head1 SYNOPSIS
@@ -53,7 +53,16 @@ Perhaps a little code snippet.
 
 =head1 DEPENDENCIES
 
-through you will need equivalent packages to libssl-dev libssl1.0-dev zlib1g-dev libgmp-dev 
+you will need some packages.
+openssl support for https
+
+   libssl-dev libssl1.0-dev zlib1g-dev
+
+for signing transactions you will need the GMP modules installed.
+It will most likely work without but be a great deal slower.
+
+   libgmp-dev
+
 
 
 =head1 SUBROUTINES/METHODS
@@ -64,9 +73,12 @@ use Modern::Perl;
 use Mojo::Base -base;
 use Mojo::UserAgent;
 use Mojo::JSON qw(decode_json encode_json);
+use Data::Dumper;
 
-has url     => 'https://steemd.steemitstage.com';
-has ua      =>  sub { Mojo::UserAgent->new };
+has url                => 'https://steemd.steemitstage.com';
+has ua                 =>  sub { Mojo::UserAgent->new };
+has posting_key        => undef;
+has plain_posting_key  => \&_transform_private_key;
 
 
 =head2 all database api methods of the steemit api
@@ -201,7 +213,6 @@ sub _get_api_definition {
       get_potential_signatures
       get_required_signatures
       get_order_book
-      get_key_references
       get_tags_used_by_author
       get_account_bandwidth
       get_replies_by_last_update
@@ -260,8 +271,149 @@ sub _get_api_definition {
 
    return (
       database_api          => [@database_api],
+      account_by_key_api    => [ qw( get_key_references )],
    )
 }
+
+sub vote {
+   my( $self, $discussion, $weight ) = @_;
+
+   my $permlink = $discussion->{permlink};
+   my $author   = $discussion->{author};
+   $weight   = $weight // 10000;
+   my $voter = $self->get_key_references([$self->public_posting_key])->[0][0];
+
+   my $properties = $self->get_dynamic_global_properties();
+
+   my $block_number  = $properties->{last_irreversible_block_num};
+   my $block_details = $self->get_block( $block_number );
+
+   my $ref_block_id  = $block_details->{previous},
+
+   my $time          = $properties->{time};
+   #my $expiration = "2018-02-24T17:00:51";#TODO dynamic date
+   my ($year,$month,$day, $hour,$min,$sec) = split /\D/, $time;
+   require Date::Calc;
+   my $epoch = Date::Calc::Date_to_Time($year,$month,$day, $hour,$min,$sec);
+   ($year,$month,$day, $hour,$min,$sec) = Date::Calc::Time_to_Date($epoch + 600 );
+   my $expiration = "$year-$month-$day".'T'."$hour:$min:$sec";
+
+   my $transaction = {
+      ref_block_num => ( $block_number - 1 )& 0xffff,
+      ref_block_prefix => unpack( "xxxxV", pack('H*',$ref_block_id)),
+      expiration       => $expiration,
+      operations       => [[
+         vote => {
+            voter => $voter,
+            author => $author,
+            permlink => $permlink,
+            weight   => $weight,
+         }
+      ]],
+      extensions => [],
+      signatures => [],
+   };
+   my $serialized_transaction = $self->_serialize_transaction_message( $transaction );
+
+   my $bin_private_key = $self->plain_posting_key;
+   require Steemit::ECDSA;
+   my ( $r, $s, $i ) = Steemit::ECDSA::ecdsa_sign( $serialized_transaction, Math::BigInt->from_bytes( $bin_private_key ) );
+   $i += 4;
+   $i += 27;
+
+   $transaction->{signatures} = [ join('', map { unpack 'H*', $_->as_bytes} ($i,$r,$s ) ) ];
+
+   $self->_request('network_broadcast_api','broadcast_transaction_synchronous',$transaction);
+}
+
+sub public_posting_key {
+   my( $self ) = @_;
+   unless( $self->{public_posting_key} ){
+      require Steemit::ECDSA;
+      my $bin_pubkey = Steemit::ECDSA::get_compressed_public_key( Math::BigInt->from_bytes( $self->plain_posting_key ) );
+      #TODO use the STM from dynamic lookup in get_config or somewhere
+      require Crypt::RIPEMD160;
+      my $rip = Crypt::RIPEMD160->new;
+      $rip->reset;
+      $rip->add($bin_pubkey);
+      my $checksum = $rip->digest;
+      $rip->reset;
+      $rip->add('');
+      $self->{public_posting_key} = "STM".Steemit::Base58::encode_base58($bin_pubkey.substr($checksum,0,4));
+   }
+
+   return $self->{public_posting_key}
+}
+
+
+sub _transform_private_key {
+   my( $self ) = @_;
+   die "posting_key missing" unless( $self->posting_key );
+
+   my $base58 = $self->posting_key;
+
+   require Steemit::Base58;
+   my $binary = Steemit::Base58::decode_base58( $base58 );
+
+
+   my $version            = substr( $binary, 0, 1 );
+   my $binary_private_key = substr( $binary, 1, -4);
+   my $checksum           = substr( $binary, -4);
+   die "invalid version in wif ( 0x80 needed ) " unless $version eq  pack "H*", '80';
+
+   require Digest::SHA;
+   my $generated_checksum = substr( Digest::SHA::sha256( Digest::SHA::sha256( $version.$binary_private_key )), 0, 4 );
+
+   die "invalid checksum " unless $generated_checksum eq $checksum;
+
+   return $binary_private_key;
+}
+
+sub _serialize_transaction_message  {
+   my ($self,$transaction) = @_;
+
+   my $serialized_transaction;
+
+   $serialized_transaction .= pack 'v', $transaction->{ref_block_num};
+
+   $serialized_transaction .= pack 'V', $transaction->{ref_block_prefix};
+
+   require Date::Calc;
+   #2016-08-08T12:24:17
+   my @dates = split /\D/, $transaction->{expiration} ;
+   my $epoch = Date::Calc::Date_to_Time( @dates);
+
+   $serialized_transaction .= pack 'L', $epoch;
+
+   $serialized_transaction .= pack "C", scalar( @{ $transaction->{operations} });
+
+   my $operation_count = 0;
+   for my $operation ( @{ $transaction->{operations} } ) {
+
+      my ($operation_name,$operations_parameters) = @$operation;
+
+      ##operation id
+      $serialized_transaction .= pack "C", 0;
+
+      $serialized_transaction .= pack "C", length $operations_parameters->{voter};
+      $serialized_transaction .= pack "A*", $operations_parameters->{voter};
+
+      $serialized_transaction .= pack "C", length $operations_parameters->{author};
+      $serialized_transaction .= pack "A*", $operations_parameters->{author};
+
+      $serialized_transaction .= pack "C", length $operations_parameters->{permlink};
+      $serialized_transaction .= pack "A*", $operations_parameters->{permlink};
+
+      $serialized_transaction .= pack "s", $operations_parameters->{weight};
+   }
+   #extentions in case we realy need them at some point we will have to implement this is a less nive way ;)
+   die "extentions not supported" if $transaction->{extensions} and $transaction->{extensions}[0];
+   $serialized_transaction .= pack 'H*', '00';
+
+   return pack( 'H*', ( '0' x 64 )).$serialized_transaction;
+}
+
+
 
 =head1 REPOSITORY
 
