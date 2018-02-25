@@ -14,9 +14,13 @@ meta-spec:
   version: '1.4'
 name: Steemit-WsClient
 provides:
+  Steemit::Base58:
+    file: lib/Steemit/Base58.pm
+  Steemit::ECDSA:
+    file: lib/Steemit/ECDSA.pm
   Steemit::WsClient:
     file: lib/Steemit/WsClient.pm
-    version: '0.04'
+    version: '0.05'
 recommends:
   Math::BigInt::GMP: '0'
 requires:
@@ -30,5 +34,5 @@ requires:
   Mojo::Base: '0'
 resources:
   license: http://opensource.org/licenses/artistic-license-2.0.php
-version: '0.04'
+version: '0.05'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

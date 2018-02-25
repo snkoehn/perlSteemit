@@ -53,7 +53,16 @@ Perhaps a little code snippet.
 
 =head1 DEPENDENCIES
 
-through you will need equivalent packages to libssl-dev libssl1.0-dev zlib1g-dev libgmp-dev
+you will need some packages.
+openssl support for https
+
+   libssl-dev libssl1.0-dev zlib1g-dev
+
+for signing transactions you will need the GMP modules installed.
+It will most likely work without but be a great deal slower.
+
+   libgmp-dev
+
 
 
 =head1 SUBROUTINES/METHODS
@@ -307,8 +316,8 @@ sub vote {
    my $serialized_transaction = $self->_serialize_transaction_message( $transaction );
 
    my $bin_private_key = $self->plain_posting_key;
-   require Steemit::Crypto;
-   my ( $r, $s, $i ) = Steemit::Crypto::ecdsa_sign( $serialized_transaction, Math::BigInt->from_bytes( $bin_private_key ) );
+   require Steemit::ECDSA;
+   my ( $r, $s, $i ) = Steemit::ECDSA::ecdsa_sign( $serialized_transaction, Math::BigInt->from_bytes( $bin_private_key ) );
    $i += 4;
    $i += 27;
 
@@ -320,8 +329,8 @@ sub vote {
 sub public_posting_key {
    my( $self ) = @_;
    unless( $self->{public_posting_key} ){
-      require Steemit::Crypto;
-      my $bin_pubkey = Steemit::Crypto::get_compressed_public_key( Math::BigInt->from_bytes( $self->plain_posting_key ) );
+      require Steemit::ECDSA;
+      my $bin_pubkey = Steemit::ECDSA::get_compressed_public_key( Math::BigInt->from_bytes( $self->plain_posting_key ) );
       #TODO use the STM from dynamic lookup in get_config or somewhere
       require Crypt::RIPEMD160;
       my $rip = Crypt::RIPEMD160->new;

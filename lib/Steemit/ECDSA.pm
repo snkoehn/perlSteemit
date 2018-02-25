@@ -1,4 +1,4 @@
-package Steemit::Crypto;
+package Steemit::ECDSA;
 use Modern::Perl;
 use Math::EllipticCurve::Prime;
 use Digest::SHA;
