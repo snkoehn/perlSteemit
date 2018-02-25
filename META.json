@@ -29,11 +29,12 @@
             "Math::BigInt::GMP" : "0"
          },
          "requires" : {
+            "Bytes::Random::Secure" : "0.05",
             "Crypt::RIPEMD160" : "0",
             "Date::Calc" : "0",
             "Digest::SHA" : "0",
             "IO::Socket::SSL" : "0",
-            "Math::BigInt" : "0",
+            "Math::BigInt" : "1.999810",
             "Math::EllipticCurve::Prime" : "0",
             "Modern::Perl" : "0",
             "Mojo::Base" : "0"

@@ -19,11 +19,12 @@ my $builder = Module::Build->new(
         'Modern::Perl'     => '0',
         'Mojo::Base'       => '0',
         'IO::Socket::SSL'  => '0',
-        'Math::BigInt'     => '0',
+        'Math::BigInt'     => '1.999810',
         'Digest::SHA'      => '0',
         'Date::Calc'       => '0',
         'Math::EllipticCurve::Prime'  => '0',
         'Crypt::RIPEMD160' => '0',
+        'Bytes::Random::Secure' => '0.05',
     },
     recommends => {
         'Math::BigInt::GMP' => '0',
