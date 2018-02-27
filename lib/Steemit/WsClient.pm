@@ -67,8 +67,8 @@ use Mojo::UserAgent;
 use Mojo::JSON qw(decode_json encode_json);
 use Data::Dumper;
 
-has url                => 'https://steemd.steemitstage.com';
-has ua                 =>  sub { Mojo::UserAgent->new };
+has url                => 'https://api.steemit.com/';
+has ua                 => sub { Mojo::UserAgent->new };
 has posting_key        => undef;
 has plain_posting_key  => \&_transform_private_key;
 
@@ -151,7 +151,7 @@ L<https://github.com/steemit/steem/blob/master/libraries/app/database_api.cpp>
 
 sub _request {
    my( $self, $api, $method, @params ) = @_;
-   my $response = $self->ua->get( $self->url, json => {
+   my $response = $self->ua->post( $self->url, json => {
       jsonrpc => '2.0',
       method  => 'call',
       params  => [$api,$method,[@params]],
