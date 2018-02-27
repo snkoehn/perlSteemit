@@ -6,18 +6,15 @@ Steemit::WsClient - perl lirary for interacting with the steemit websocket servi
 
 =head1 VERSION
 
-Version 0.07
+Version 0.08
 
 =cut
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
 
     use Steemit::WsClient;
 
@@ -55,14 +52,9 @@ Perhaps a little code snippet.
 
 you will need some packages.
 openssl support for https
+libgmp-dev for large integer aritmetic needd for the eliptical curve calculations
 
-   libssl-dev libssl1.0-dev zlib1g-dev
-
-for signing transactions you will need the GMP modules installed.
-It will most likely work without but be a great deal slower.
-
-   libgmp-dev
-
+   libssl-dev zlib1g-dev libgmp-dev
 
 
 =head1 SUBROUTINES/METHODS
@@ -184,7 +176,7 @@ _install_methods();
 sub _install_methods {
    my %definition = _get_api_definition();
    for my $api ( keys %definition ){
-      for my $method ( $definition{$api}->@* ){
+      for my $method ( @{ $definition{$api} } ){
          no strict 'subs';
          no strict 'refs';
          my $package_sub = join '::', __PACKAGE__, $method;
@@ -422,7 +414,7 @@ L<https://github.com/snkoehn/perlSteemit>
 
 =head1 AUTHOR
 
-snkoehn, C<< <koehn.sebastian at gmail.com> >>
+snkoehn, C<< <snkoehn at cpan.org> >>
 
 =head1 BUGS
 
