@@ -205,7 +205,7 @@ __END__
 
 =head1 NAME
 
-Steemit::ECDSA - perl lirary wich implements ecda helper methods used by the Steemit::WsClient distribution
+Steemit::ECDSA - perl library wich implements ecda helper methods used by the Steemit::WsClient distribution
 
 =head1 SYNOPSIS
 

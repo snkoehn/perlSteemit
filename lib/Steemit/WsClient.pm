@@ -2,7 +2,7 @@ package Steemit::WsClient;
 
 =head1 NAME
 
-Steemit::WsClient - perl lirary for interacting with the steemit websocket services!
+Steemit::WsClient - perl library for interacting with the steemit websocket services!
 
 =head1 VERSION
 
@@ -10,7 +10,7 @@ Version 0.09
 
 =cut
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 
 =head1 SYNOPSIS
@@ -146,6 +146,56 @@ L<https://github.com/steemit/steem/blob/master/libraries/app/database_api.cpp>
       lookup_accounts
       get_state
       get_withdraw_routes
+
+
+=head2 get_discussions_by_xxxxxx
+
+all those methods will sort the results differently and accept one query parameter with the values:
+
+   {
+      tag   => 'tagtosearch',   # optional
+      limit => 1,               # max 100
+      filter_tags => [],        # tags to filter out
+      select_authors => [],     # only those authors
+      truncate_body  => 0       # the number of bytes of the post body to return, 0 for all
+      start_author   => ''      # used together with the start_permlink gor pagination
+      start_permlink => ''      #
+      parent_author  => ''      #
+      parent_permlink => ''     #
+   }
+
+so one example on how to get 200 discussions would be
+
+
+   my $discussions = $steem->get_discussions_by_created({
+         limit => 100,
+         truncate_body => 1,
+   });
+
+   my $discussion = $discussions[-1];
+
+   push @$discussions, $steem->get_discussions_by_created({
+         limit => 100,
+         truncate_body => 1,
+         start_author   => $discussion->{author},
+         start_permlink => $discussion->{permlink},
+   });
+
+
+=head2 vote
+
+this requires you to initialize the module with your private posting key like this:
+
+
+   my $steem = Steemit::WsClient->new(
+      posting_key => 'copy this one from the steemit site',
+
+   );
+
+   $steem->vote($discossion,$weight)
+
+weight is optional default is 10000 wich equals to 100%
+
 
 =cut
 
