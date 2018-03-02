@@ -337,6 +337,36 @@ sub vote {
    return $self->_broadcast_transaction(@operations);
 }
 
+sub comment {
+   my( $self, %params ) = @_;
+
+   my $parent_author   = $params{parent_author} // '';
+   my $parent_permlink = $params{parent_permlink} // '';
+   my $permlink        = $params{permlink} or die "permlink missing for comment";
+   my $title           = $params{title} // '';
+   my $body            = $params{body} or die "body missing for comment";
+
+   my $json_metadata   = $params{json_metadata} // {};
+   if( ref $json_metadata ){
+      $json_metadata = encode_json( $json_metadata);
+   }
+
+   my $author = $self->get_key_references([$self->public_posting_key])->[0][0];
+
+   my $operation = [
+      comment => {
+         "parent_author"   => $parent_author,
+         "parent_permlink" => $parent_permlink,
+         "author"          => $author,
+         "permlink"        => $permlink,
+         "title"           => $title,
+         "body"            => $body,
+         "json_metadata"   => $json_metadata,
+      }
+   ];
+   return $self->_broadcast_transaction($operation);
+}
+
 sub _broadcast_transaction {
    my( $self, @operations ) = @_;
 
@@ -374,9 +404,6 @@ sub _broadcast_transaction {
    $transaction->{signatures} = [ join('', map { unpack 'H*', $_->as_bytes} ($i,$r,$s ) ) ];
 
    $self->_request('network_broadcast_api','broadcast_transaction_synchronous',$transaction);
-
-
-
 }
 
 sub public_posting_key {

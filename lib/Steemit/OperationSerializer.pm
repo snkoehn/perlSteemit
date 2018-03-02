@@ -21,6 +21,15 @@ sub serialize_operation {
 
 }
 
+#let vote = new Serializer(
+#    "vote", {
+#    voter: string,
+#    author: string,
+#    permlink: string,
+#    weight: int16
+#}
+#);
+
 sub serialize_vote {
    my( $self, $operation_name, $operation_parameters ) = @_;
 
@@ -41,8 +50,34 @@ sub serialize_vote {
 
 
    return $serialized_operation;
+}
 
 
+#let comment = new Serializer(
+#    "comment", {
+#    parent_author: string,
+#    parent_permlink: string,
+#    author: string,
+#    permlink: string,
+#    title: string,
+#    body: string,
+#    json_metadata: string
+#}
+#);
+
+sub serialize_comment {
+   my( $self, $operation_name, $operation_parameters ) = @_;
+
+   my $serialized_operation = '';
+   my $operation_id = $self->_index_of_operation($operation_name);
+   $serialized_operation .= pack "C", $operation_id;
+
+   for my $field ( qw(parent_author parent_permlink author permlink title body json_metadata) ){
+      $serialized_operation .= pack "C", length $operation_parameters->{$field};
+      $serialized_operation .= pack "A*", $operation_parameters->{$field};
+   }
+
+   return $serialized_operation;
 }
 
 
