@@ -20,6 +20,8 @@ provides:
     file: lib/Steemit/Base58.pm
   Steemit::ECDSA:
     file: lib/Steemit/ECDSA.pm
+  Steemit::OperationSerializer:
+    file: lib/Steemit/OperationSerializer.pm
   Steemit::WsClient:
     file: lib/Steemit/WsClient.pm
     version: '0.10'

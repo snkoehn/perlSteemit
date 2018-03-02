@@ -3,6 +3,7 @@ Changes
 lib/Steemit/WsClient.pm
 lib/Steemit/Base58.pm
 lib/Steemit/ECDSA.pm
+lib/Steemit/OperationSerializer.pm
 MANIFEST			This list of files
 MANIFEST.SKIP
 README
