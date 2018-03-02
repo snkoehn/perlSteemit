@@ -459,6 +459,7 @@ sub _serialize_transaction_message  {
 sub _index_of_operation {
    my ( $self, $operation ) = @_;
 
+   #https://github.com/steemit/steem-js/blob/master/src/auth/serializer/src/operations.js#L767
    my @operations = qw(
    vote
    comment
