@@ -9,11 +9,11 @@ $::testing_only::inject_k = undef;
 
 sub ecdsa_sign {
   my( $message, $key ) = @_;
-  my $n = $curve->n; my $nlen = length($n->as_bin);
+  my $n = $curve->n; my $nlen = length($n->to_bytes);
   require Bytes::Random::Secure;
   my $random = Bytes::Random::Secure->new( Bits => 128 );
   my $sha256 = Digest::SHA::sha256( $message );
-  my $z = Math::BigInt->new(substr(Math::BigInt->from_bytes($sha256)->as_bin,0,$nlen));
+  my $z = Math::BigInt->from_bytes(substr($sha256,0,$nlen));
   my $N_OVER_TWO = $n->copy->brsft(1);
 
   my $is_canonical;
@@ -63,8 +63,8 @@ sub is_signature_canonical_canonical{
 sub bytes_32_sha256 {
   my ( $message ) = @_;
   my $sha256 = Digest::SHA::sha256( $message );
-  my $n = $curve->n; my $nlen = length($n->as_bin);
-  my $z = Math::BigInt->new(substr(Math::BigInt->from_bytes($sha256)->as_bin,0,$nlen));
+  my $n = $curve->n; my $nlen = length($n->to_bytes);
+  my $z = Math::BigInt->from_bytes(substr($sha256,0,$nlen));
   return $z;
 }
 
@@ -73,9 +73,9 @@ sub ecdsa_verify {
    my $n = $curve->n;
    return unless $r > 0 and $r < $n and $s > 0 and $s < $n;
 
-   my $nlen  = length($n->as_bin);
+   my $nlen  = length($n->to_bytes);
    my $sha256 = Digest::SHA::sha256( $message );
-   my $z = Math::BigInt->new(substr(Math::BigInt->from_bytes($sha256)->as_bin,0,$nlen));
+   my $z = Math::BigInt->from_bytes(substr($sha256,0,$nlen));
 
    my $w = $s->copy->bmodinv($n);
    my $u1 = ($w * $z)->bmod($n); my $u2 = ($w * $r)->bmod($n);
