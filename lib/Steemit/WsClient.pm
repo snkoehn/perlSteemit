@@ -318,12 +318,27 @@ sub _get_api_definition {
 }
 
 sub vote {
-   my( $self, $discussion, $weight ) = @_;
+   my( $self, @discussions ) = @_;
 
-   my $permlink = $discussion->{permlink};
-   my $author   = $discussion->{author};
+   my $weight;
+   $weight = pop @discussions, unless ref $discussions[-1];
    $weight   = $weight // 10000;
    my $voter = $self->get_key_references([$self->public_posting_key])->[0][0];
+
+   my @operations = map { [
+         vote => {
+            voter    => $voter,
+            author   => $_->{author},
+            permlink => $_->{permlink},
+            weight   => $weight,
+         }
+      ]
+      } @discussions;
+   return $self->_broadcast_transaction(@operations);
+}
+
+sub _broadcast_transaction {
+   my( $self, @operations ) = @_;
 
    my $properties = $self->get_dynamic_global_properties();
 
@@ -344,14 +359,7 @@ sub vote {
       ref_block_num => ( $block_number - 1 )& 0xffff,
       ref_block_prefix => unpack( "xxxxV", pack('H*',$ref_block_id)),
       expiration       => $expiration,
-      operations       => [[
-         vote => {
-            voter => $voter,
-            author => $author,
-            permlink => $permlink,
-            weight   => $weight,
-         }
-      ]],
+      operations       => [@operations],
       extensions => [],
       signatures => [],
    };
@@ -366,6 +374,9 @@ sub vote {
    $transaction->{signatures} = [ join('', map { unpack 'H*', $_->as_bytes} ($i,$r,$s ) ) ];
 
    $self->_request('network_broadcast_api','broadcast_transaction_synchronous',$transaction);
+
+
+
 }
 
 sub public_posting_key {
