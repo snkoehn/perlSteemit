@@ -12,6 +12,18 @@ sub new {
 sub serialize_operation {
    my( $self, $operation_name, $operation_parameters ) = @_;
    ##operation id
+
+   if( my $serializer_method = $self->can("serialize_$operation_name") ){
+      return $serializer_method->($self,$operation_name,$operation_parameters);
+   }else{
+      die "operation $operation_name currently not support for serialisation";
+   }
+
+}
+
+sub serialize_vote {
+   my( $self, $operation_name, $operation_parameters ) = @_;
+
    my $serialized_operation = '';
    my $operation_id = $self->_index_of_operation($operation_name);
    $serialized_operation .= pack "C", $operation_id;
@@ -29,6 +41,8 @@ sub serialize_operation {
 
 
    return $serialized_operation;
+
+
 }
 
 
