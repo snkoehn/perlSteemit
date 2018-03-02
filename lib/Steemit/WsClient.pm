@@ -6,11 +6,11 @@ Steemit::WsClient - perl library for interacting with the steemit websocket serv
 
 =head1 VERSION
 
-Version 0.09
+Version 0.11
 
 =cut
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 
 =head1 SYNOPSIS

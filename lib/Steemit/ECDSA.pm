@@ -51,8 +51,6 @@ sub deterministicGenerateK {
 sub ecdsa_sign {
   my( $message, $key ) = @_;
   my $n = $curve->n; my $nlen = length($n->to_bytes);
-  require Bytes::Random::Secure;
-  my $random = Bytes::Random::Secure->new( Bits => 128 );
   my $sha256 = Digest::SHA::sha256( $message );
   my $z = Math::BigInt->from_bytes(substr($sha256,0,$nlen));
   my $N_OVER_TWO = $n->copy->brsft(1);
