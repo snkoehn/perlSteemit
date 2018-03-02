@@ -367,6 +367,22 @@ sub comment {
    return $self->_broadcast_transaction($operation);
 }
 
+sub delete_comment {
+   my( $self, %params ) = @_;
+
+   my $permlink = $params{permlink} or die "permlink missing for comment";
+
+   my $author   = $params{author} // $self->get_key_references([$self->public_posting_key])->[0][0];
+
+   my $operation = [
+      delete_comment => {
+            "author"          => $author,
+            "permlink"        => $permlink,
+      }
+   ];
+   return $self->_broadcast_transaction($operation);
+}
+
 sub _broadcast_transaction {
    my( $self, @operations ) = @_;
 

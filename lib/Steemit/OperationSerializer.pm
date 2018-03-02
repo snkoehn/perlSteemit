@@ -1,5 +1,7 @@
 package Steemit::OperationSerializer;
 use Modern::Perl;
+use Carp;
+use Data::Dumper;
 
 sub new {
    my( $class, %params ) = @_;
@@ -73,6 +75,7 @@ sub serialize_comment {
    $serialized_operation .= pack "C", $operation_id;
 
    for my $field ( qw(parent_author parent_permlink author permlink title body json_metadata) ){
+      confess "$field missing in parameters".Dumper($operation_parameters)   unless defined $operation_parameters->{$field};
       $serialized_operation .= pack "C", length $operation_parameters->{$field};
       $serialized_operation .= pack "A*", $operation_parameters->{$field};
    }
@@ -80,6 +83,28 @@ sub serialize_comment {
    return $serialized_operation;
 }
 
+
+#let delete_comment = new Serializer(
+#    "delete_comment", {
+#    author: string,
+#    permlink: string
+#}
+#);
+
+sub serialize_delete_comment {
+   my( $self, $operation_name, $operation_parameters ) = @_;
+
+   my $serialized_operation = '';
+   my $operation_id = $self->_index_of_operation($operation_name);
+   $serialized_operation .= pack "C", $operation_id;
+
+   for my $field ( qw(author permlink) ){
+      $serialized_operation .= pack "C", length $operation_parameters->{$field} or confess "$field missing in parameters".Dumper($operation_parameters);;
+      $serialized_operation .= pack "A*", $operation_parameters->{$field};
+   }
+
+   return $serialized_operation;
+}
 
 
 
