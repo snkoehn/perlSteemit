@@ -5,7 +5,7 @@ use Digest::SHA;
 use Carp;
 
 my $curve = Math::EllipticCurve::Prime->from_name('secp256k1');
-
+$::testing_only::inject_k = undef;
 
 sub ecdsa_sign {
   my( $message, $key ) = @_;
@@ -21,7 +21,7 @@ sub ecdsa_sign {
   while( not $is_canonical ){
      until ($s and length( $s->to_bytes ) == 32 ) {
        until ($r and length( $r->to_bytes) == 32 ) {
-         $k = Math::BigInt->from_bin($random->string_from('01',$nlen-2)) until $k > 1 and $k < $n;
+         $k = $::testing_only::inject_k // Math::BigInt->from_bin($random->string_from('01',$nlen-2)) until $k > 1 and $k < $n;
          my $point = $curve->g->multiply($k);
          $r = $point->x->bmod($n);
        }
@@ -70,7 +70,6 @@ sub bytes_32_sha256 {
 
 sub ecdsa_verify {
    my ($message, $pubkey, $r, $s) = @_;
-   my $curve = Math::EllipticCurve::Prime->from_name('secp256k1');
    my $n = $curve->n;
    return unless $r > 0 and $r < $n and $s > 0 and $s < $n;
 
@@ -150,7 +149,6 @@ sub get_compressed_public_key {
 
 sub get_recovery_factor {
    my ( $x,$y ) = @_;
-   my $curve = Math::EllipticCurve::Prime->from_name('secp256k1');
    my ($p, $a, $b) = ($curve->p, $curve->a, $curve->b);
    $x = $x->copy;
    $y = $y->copy;
@@ -178,7 +176,6 @@ sub point_from_x {
 
 sub recover_y {
    my ( $x,$i ) = @_;
-   my $curve = Math::EllipticCurve::Prime->from_name('secp256k1');
    my ($p, $a, $b) = ($curve->p, $curve->a, $curve->b);
    $x = $x->copy;
 
