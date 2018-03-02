@@ -181,24 +181,7 @@ so one example on how to get 200 discussions would be
          start_permlink => $discussion->{permlink},
    });
 
-
-=head2 vote
-
-this requires you to initialize the module with your private posting key like this:
-
-
-   my $steem = Steemit::WsClient->new(
-      posting_key => 'copy this one from the steemit site',
-
-   );
-
-   $steem->vote($discossion,$weight)
-
-weight is optional default is 10000 wich equals to 100%
-
-
 =cut
-
 sub _request {
    my( $self, $api, $method, @params ) = @_;
    my $response = $self->ua->post( $self->url, json => {
@@ -317,6 +300,25 @@ sub _get_api_definition {
    )
 }
 
+
+=head2 vote
+
+this requires you to initialize the module with your private posting key like this:
+
+
+   my $steem = Steemit::WsClient->new(
+      posting_key => 'copy this one from the steemit site',
+
+   );
+
+   $steem->vote($discussion,$weight)
+
+weight is optional default is 10000 wich equals to 100%
+
+
+=cut
+
+
 sub vote {
    my( $self, @discussions ) = @_;
 
@@ -336,6 +338,32 @@ sub vote {
       } @discussions;
    return $self->_broadcast_transaction(@operations);
 }
+
+=head2 comment
+
+this requires you to initialize the module with your private posting key like this:
+
+
+   my $steem = Steemit::WsClient->new(
+      posting_key => 'copy this one from the steemit site',
+
+   );
+
+   $steem->comment(
+         "parent_author"   => $parent_author,
+         "parent_permlink" => $parent_permlink,
+         "author"          => $author,
+         "permlink"        => $permlink,
+         "title"           => $title,
+         "body"            => $body,
+         "json_metadata"   => $json_metadata,
+   )
+
+you need at least a permlink and body
+fill the parent parameters to comment on an existing post
+json metadata can be already a json string or a perl hash
+
+=cut
 
 sub comment {
    my( $self, %params ) = @_;
@@ -367,6 +395,18 @@ sub comment {
    return $self->_broadcast_transaction($operation);
 }
 
+=head2 delete_comment
+
+   $steem->delete_comment(
+      author => $author,
+      permlink => $permlink
+   )
+
+you need the permlink
+author will be filled with the user of your posting key if missing
+
+=cut
+
 sub delete_comment {
    my( $self, %params ) = @_;
 
@@ -382,6 +422,7 @@ sub delete_comment {
    ];
    return $self->_broadcast_transaction($operation);
 }
+
 
 sub _broadcast_transaction {
    my( $self, @operations ) = @_;
