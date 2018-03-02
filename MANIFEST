@@ -12,6 +12,7 @@ t/02-base58.t
 t/01-keys.t
 t/03-transactions.t
 t/04-ecdsa.t
+t/06-operation_serialisation.t
 t/manifest.t
 t/pod-coverage.t
 t/pod.t
