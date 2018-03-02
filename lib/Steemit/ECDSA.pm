@@ -7,6 +7,47 @@ use Carp;
 my $curve = Math::EllipticCurve::Prime->from_name('secp256k1');
 $::testing_only::inject_k = undef;
 
+# https://tools.ietf.org/html/rfc6979#section-3.2
+sub deterministicGenerateK {
+  my ( $hash, $d, $nonce)  = @_;
+
+  $nonce //= 0;
+
+  if ($nonce) {
+    $hash = Digest::SHA::sha256( $hash.pack( "C",$nonce) );
+  }
+
+  # sanity check
+  die " hash must be 256 bit but byte length is ".length($hash) unless length($hash) == 32;
+
+  my $x = $d;
+  # Step B
+  my $v = pack "H*", 'F'x64;
+
+  # Step C
+  my $k = pack "H*", '0'x64;
+
+  # Step D
+  $k = Digest::SHA::hmac_sha256( $v.pack('C',0).$x->to_bytes.$hash, $k);
+
+  # Step E
+  $v = Digest::SHA::hmac_sha256($v, $k);
+
+  # Step F
+  $k = Digest::SHA::hmac_sha256($v.pack('C',1).$x->to_bytes.$hash ,$k);
+
+  #// Step G
+  $v = Digest::SHA::hmac_sha256($v,$k);
+
+  #// Step H1/H2a, ignored as tlen === qlen (256 bit)
+  #// Step H2b
+  $v = Digest::SHA::hmac_sha256( $v,$k);
+
+  my $T = Math::BigInt->from_bytes( $v );
+
+  return($T,$v,$k)
+}
+
 sub ecdsa_sign {
   my( $message, $key ) = @_;
   my $n = $curve->n; my $nlen = length($n->to_bytes);
@@ -17,37 +58,45 @@ sub ecdsa_sign {
   my $N_OVER_TWO = $n->copy->brsft(1);
 
   my $is_canonical;
-  my ($k, $r, $s, $i ) = map {Math::BigInt->new($_) }(0,0,0);
-  while( not $is_canonical ){
-     until ($s and length( $s->to_bytes ) == 32 ) {
-       until ($r and length( $r->to_bytes) == 32 ) {
-         $k = $::testing_only::inject_k // Math::BigInt->from_bin($random->string_from('01',$nlen-2)) until $k > 1 and $k < $n;
+  my ($k, $r, $s, $i );
+  my $nonce = 0;
+  while( 1){
+
+     ($k, $r, $s, $i ) = map {Math::BigInt->new($_) }(0,0,0);
+     my ($k,$v,$k2) = deterministicGenerateK( substr($sha256,0,$nlen), $key, $nonce);
+
+     # we need r and s to be in a valid form first
+     until( $k > 0 and $k < $n and $r > 0 and $s > 0 and length($r->to_bytes) == 32 and length($s->to_bytes) == 32 and _are_rs_canonical($r,$s) ){
+
+         $k2 = Digest::SHA::hmac_sha256( $v.pack('C',0), $k2 );
+         $v  = Digest::SHA::hmac_sha256( $v, $k2 );
+         $k  = $::testing_only::inject_k // Math::BigInt->from_bytes( $v );
+
+         #$k = $::testing_only::inject_k // Math::BigInt->from_bin($random->string_from('01',$nlen-2)) until $k > 1 and $k < $n;
          my $point = $curve->g->multiply($k);
          $r = $point->x->bmod($n);
-       }
-       $s = (($z + $key * $r) * $k->bmodinv($n))->bmod($n);
+         $s = (($z + $key * $r) * $k->bmodinv($n))->bmod($n);
      }
 
      if( $s > $N_OVER_TWO ){
         $s = $n - $s;
      }
 
-
-     $i = calcPubKeyRecoveryParam($message, $r, $s, get_public_key_point( $key ) );
-     $is_canonical = is_signature_canonical_canonical(
-        join(
-           '',
-           map {$_->to_bytes}
-           ( $i + 27 + 4),$r,$s
-        )
-     );
-     unless( $is_canonical ){
-        ($k, $r, $s, $i ) = map {Math::BigInt->new($_) }(0,0,0);
+     $i = eval{ calcPubKeyRecoveryParam($message, $r, $s, get_public_key_point( $key ) ) };
+     if( my $error = $@ and not $i ){
+        die $error unless $error =~ /Unable to find valid recovery factor/;
+        $nonce++;
+        next;
      }
-
+     return ( $r, $s, $i );
   }
 
   return ( $r, $s, $i );
+}
+
+sub _are_rs_canonical {
+   my($r,$s) = @_;
+   return is_signature_canonical_canonical( pack('C','0').$r->to_bytes.$s->to_bytes)
 }
 
 sub is_signature_canonical_canonical{

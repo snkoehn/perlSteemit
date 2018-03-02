@@ -458,7 +458,13 @@ sub _broadcast_transaction {
    $i += 4;
    $i += 27;
 
-   $transaction->{signatures} = [ join('', map { unpack 'H*', $_->as_bytes} ($i,$r,$s ) ) ];
+   my $signature = join('', map { unpack 'H*', $_ } ( pack("C", $i ), map { $_->as_bytes} ($r,$s )) );
+   unless( Steemit::ECDSA::is_signature_canonical_canonical( pack "H*", $signature ) ){
+      die "signature $signature is not canonical";
+   }
+
+   $transaction->{signatures} = [ $signature ];
+
 
    $self->_request('network_broadcast_api','broadcast_transaction_synchronous',$transaction);
 }

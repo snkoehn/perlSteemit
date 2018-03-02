@@ -6,7 +6,7 @@ use warnings;
 use Test::More;
 use Data::Dumper;
 
-plan tests => 4;
+plan tests => 5;
 
 use_ok( 'Steemit::OperationSerializer' ) || print "Bail out!\n";
 

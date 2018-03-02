@@ -38,7 +38,6 @@ subtest 'sign and verify' => sub {
    ok( Steemit::ECDSA::ecdsa_verify( $message, $recovered_pubkey, $r, $s ), "signing seems to work with recovered key" );
 };
 
-
 subtest 'sign and verify with prerecorded values' => sub {
    my $k = Math::BigInt->from_hex( '1c472b04399ee0add8dc96b49d198b9db259b2eaffbf3f5b43987afca245e969');
    my $r = Math::BigInt->from_hex( '3af55656506144676605bf52742537e72c40d1ae964250fa481a8fc940ec3481');
