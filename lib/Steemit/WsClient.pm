@@ -424,6 +424,47 @@ sub delete_comment {
    return $self->_broadcast_transaction($operation);
 }
 
+=head2 delta_steem_time( $steem_time, $delta_seconds )
+
+the method will take a steem timestam in the format '2018-02-24T16:17:09' like returned in many api calls and add $delta_seconds to it.
+can also be negative to travel into the past
+
+=cut
+
+sub delta_steem_time {
+   my( $self, $steem_time, $delta_seconds ) = @_;
+   return $self->epoch_to_steem_time(
+      $self->steem_time_to_epoch( $steem_time ) + $delta_seconds
+   )
+}
+
+=head2 steem_time_to_epoch( $steem_time )
+
+takes a steem time format and returns the unit time in seconds
+
+=cut
+
+sub steem_time_to_epoch {
+   my( $self, $steem_time ) = @_;
+   my ($year,$month,$day, $hour,$min,$sec) = split /\D/, $steem_time;
+   require Date::Calc;
+   return Date::Calc::Date_to_Time($year,$month,$day, $hour,$min,$sec);
+}
+
+=head2 epoch_to_steem_time( $epoch )
+
+take the epoch like returned by the time() functiona nd convert it to the steem time format
+
+=cut
+
+sub epoch_to_steem_time {
+   my( $self, $epoch ) = @_;
+   require Date::Calc;
+   my ($year,$month,$day, $hour,$min,$sec) = Date::Calc::Time_to_Date($epoch);
+   return  sprintf("%04d-%02d-%02dT%02d:%02d:%02d",$year,$month,$day,$hour,$min,$sec);
+}
+
+
 
 sub _broadcast_transaction {
    my( $self, @operations ) = @_;
@@ -435,13 +476,7 @@ sub _broadcast_transaction {
 
    my $ref_block_id  = $block_details->{previous},
 
-   my $time          = $properties->{time};
-   #my $expiration = "2018-02-24T17:00:51";#TODO dynamic date
-   my ($year,$month,$day, $hour,$min,$sec) = split /\D/, $time;
-   require Date::Calc;
-   my $epoch = Date::Calc::Date_to_Time($year,$month,$day, $hour,$min,$sec);
-   ($year,$month,$day, $hour,$min,$sec) = Date::Calc::Time_to_Date($epoch + 600 );
-   my $expiration = "$year-$month-$day".'T'."$hour:$min:$sec";
+   my $expiration    = $self->delta_steem_time($properties->{time},600);
 
    my $transaction = {
       ref_block_num => ( $block_number - 1 )& 0xffff,
