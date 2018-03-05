@@ -66,6 +66,7 @@ use Mojo::Base -base;
 use Mojo::UserAgent;
 use Mojo::JSON qw(decode_json encode_json);
 use Data::Dumper;
+use Encode;
 
 has url                => 'https://api.steemit.com/';
 has ua                 => sub { Mojo::UserAgent->new };
@@ -193,7 +194,7 @@ sub _request {
 
    die "error while requesting steemd ". $response->to_string unless $response->is_success;
 
-   my $result   = decode_json $response->body;
+   my $result   = eval{ decode_json  Encode::encode('UTF-8',$response->body)} or die $response->to_string.$@;
 
    return $result->{result} if $result->{result};
    if( my $error = $result->{error} ){
