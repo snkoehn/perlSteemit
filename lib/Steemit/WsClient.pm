@@ -182,7 +182,17 @@ so one example on how to get 200 discussions would be
          start_permlink => $discussion->{permlink},
    });
 
+=head2 $steem->get_discussions_by_author_before_date($author,$permlink,$steem_time,$limit);
+
+this method takes in:
+
+    an author for wich to display the discussions
+    an optional pemalink of a post of you are only interested in comments below one specific post
+    a date before wich the content is displayed ( or not after ;)
+    a limit of posts to look for
+
 =cut
+
 sub _request {
    my( $self, $api, $method, @params ) = @_;
    my $response = $self->ua->post( $self->url, json => {
