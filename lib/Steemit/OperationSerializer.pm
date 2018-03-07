@@ -107,6 +107,93 @@ sub serialize_delete_comment {
 }
 
 
+#let limit_order_create = new Serializer(
+#    "limit_order_create", {
+#    owner: string,
+#    orderid: uint32,
+#    amount_to_sell: asset,
+#    min_to_receive: asset,
+#    fill_or_kill: bool,
+#    expiration: time_point_sec
+#}
+#);
+
+my %asset_precision = (
+    STEEM => 3,
+    VESTS => 6,
+    SBD   => 3,
+);
+
+#asset => { amount: int64, symbol => int64}
+#this will limit us in perl to 64 bit operating systems
+sub _serialize_asset {
+   my( $self, $asset ) = @_;
+
+   my( $amount, $symbol ) = split(/\s+/, $asset);
+
+   my $precision = $asset_precision{$symbol} or die  "symbol $symbol unknown";
+   my $serialized_amount = '';
+
+   $amount  = $amount * ( 10**$precision );
+   my $padding = pack("C",0)x(7-length($symbol));
+   $symbol     = pack("A*",$symbol);
+
+   return pack("q",$amount).pack("C",$precision).$symbol.$padding;
+}
+
+sub serialize_limit_order_create {
+   my( $self, $operation_name, $operation_parameters ) = @_;
+
+   my $serialized_operation = '';
+   my $operation_id = $self->_index_of_operation($operation_name);
+   $serialized_operation .= pack "C", $operation_id;
+
+   $serialized_operation .= pack "C", length $operation_parameters->{'owner'};
+   $serialized_operation .= pack "A*", $operation_parameters->{'owner'};
+
+   $serialized_operation .= pack "V", $operation_parameters->{orderid};
+
+   #asset => { amount: int64, symbol => int64}
+   #this will limit us in perl to 64 bit operating systems
+
+   $serialized_operation .= $self->_serialize_asset( $operation_parameters->{amount_to_sell} );
+   $serialized_operation .= $self->_serialize_asset( $operation_parameters->{min_to_receive} );
+
+   #bool = unit8 of 1 or 0
+   my $bool = $operation_parameters->{fill_or_kill} eq 'false' ? 0 : $operation_parameters->{fill_or_kill};
+   $serialized_operation .= pack "C", $operation_parameters->{fill_or_kill} ? 0 : 1;
+
+   require Steemit::WsClient;
+   $serialized_operation .= pack 'L', Steemit::WsClient->steem_time_to_epoch( $operation_parameters->{expiration} );
+
+   return $serialized_operation;
+}
+
+#
+#let limit_order_cancel = new Serializer(
+#    "limit_order_cancel", {
+#    owner: string,
+#    orderid: uint32
+#}
+#);
+#
+sub serialize_limit_order_cancel {
+
+   my( $self, $operation_name, $operation_parameters ) = @_;
+
+   my $serialized_operation = '';
+   my $operation_id = $self->_index_of_operation($operation_name);
+   $serialized_operation .= pack "C", $operation_id;
+
+   $serialized_operation .= pack "C", length $operation_parameters->{'owner'};
+   $serialized_operation .= pack "A*", $operation_parameters->{'owner'};
+
+   $serialized_operation .= pack "V", $operation_parameters->{orderid};
+
+   return $serialized_operation;
+}
+
+
 
 sub _index_of_operation {
    my ( $self, $operation ) = @_;

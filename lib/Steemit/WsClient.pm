@@ -67,11 +67,14 @@ use Mojo::UserAgent;
 use Mojo::JSON qw(decode_json encode_json);
 use Data::Dumper;
 use Encode;
+use Carp;
 
 has url                => 'https://api.steemit.com/';
 has ua                 => sub { Mojo::UserAgent->new };
 has posting_key        => undef;
+has active_key         => undef;
 has plain_posting_key  => \&_transform_private_key;
+has plain_active_key   => \&_transform_private_key_active;
 
 
 =head2 all database api methods of the steemit api
@@ -458,7 +461,8 @@ sub steem_time_to_epoch {
    my( $self, $steem_time ) = @_;
    my ($year,$month,$day, $hour,$min,$sec) = split /\D/, $steem_time;
    require Date::Calc;
-   return Date::Calc::Date_to_Time($year,$month,$day, $hour,$min,$sec);
+   my $epoch = eval{ Date::Calc::Date_to_Time($year,$month,$day, $hour,$min,$sec) } or confess $steem_time.$@;
+   return $epoch;
 }
 
 =head2 epoch_to_steem_time( $epoch )
@@ -470,14 +474,89 @@ take the epoch like returned by the time() functiona nd convert it to the steem 
 sub epoch_to_steem_time {
    my( $self, $epoch ) = @_;
    require Date::Calc;
-   my ($year,$month,$day, $hour,$min,$sec) = Date::Calc::Time_to_Date($epoch);
+   my ($year,$month,$day, $hour,$min,$sec) = eval{ Date::Calc::Time_to_Date($epoch) } or cofess $@;
    return  sprintf("%04d-%02d-%02dT%02d:%02d:%02d",$year,$month,$day,$hour,$min,$sec);
 }
+
+=head2 limit_order_create
+
+this will create a market order to sell some item for something else
+
+   my $steem = Steemit::WsClient->new( active_key => 'copy from website' );
+
+   $steem->limit_order_create(
+      amount_to_sell => "0.001 STEEM",
+      min_to_receive => "0.300 SBD",
+   )
+
+Further optional parameters are
+
+fill_or_kill => default false, if given a (perl true value ) i guess the order has to be completely filled in one go or will not fill at all
+orderid     => defaults to the current time epoch, you can however give a value in, this will be usefull for canceling the order again
+expiration   => defaults to "2060-02-07T06:28:15" and needs the saem format, if you encounte this as a bug because this timestamp is in the past well done sir. You have earned the chief archiological code award of the month
+
+please note that the amounts need to have exactly 3 prcition numbers
+
+=cut
+
+sub limit_order_create {
+   my( $self, %order ) = @_;
+
+   my $owner = $self->get_key_references([$self->public_active_key])->[0][0];
+
+   return $self->_broadcast_transaction_active([
+      limit_order_create => {
+       "owner"          => $owner,
+       "orderid"        => $order{orderid} // time()."",
+       "amount_to_sell" => $order{amount_to_sell} // die("amount_to_sell missing"),
+       "min_to_receive" => $order{min_to_receive} // die("min_to_receive missing"),
+       "fill_or_kill"   => $order{fill_or_kill} ? 'true' : 'false',
+       "expiration"     => $order{expiration} // "2030-02-07T06:28:15",
+   }]);
+}
+
+
+=head2 limit_order_cancel
+
+will cancel a exiting order based on the order_id
+
+   $steem->limit_order_cancel(
+      orderid => 1234
+   );
+
+=cut
+
+sub limit_order_cancel {
+   my( $self, %order ) = @_;
+
+   my $owner = $self->get_key_references([$self->public_active_key])->[0][0];
+
+   $self->_broadcast_transaction_active([
+      limit_order_cancel => {
+       "owner" => $owner,
+       "orderid" => $order{orderid} // die "orderid missing"
+   }]);
+}
+
+
 
 
 
 sub _broadcast_transaction {
    my( $self, @operations ) = @_;
+
+   return $self->_broadcast_transaction_with_keys( $self->plain_posting_key, @operations );
+}
+
+sub _broadcast_transaction_active {
+   my( $self, @operations ) = @_;
+
+   return $self->_broadcast_transaction_with_keys( $self->plain_active_key, @operations );
+}
+
+
+sub _broadcast_transaction_with_keys {
+   my( $self, $private_key, @operations ) = @_;
 
    my $properties = $self->get_dynamic_global_properties();
 
@@ -498,7 +577,7 @@ sub _broadcast_transaction {
    };
    my $serialized_transaction = $self->_serialize_transaction_message( $transaction );
 
-   my $bin_private_key = $self->plain_posting_key;
+   my $bin_private_key = $private_key;
    require Steemit::ECDSA;
    my ( $r, $s, $i ) = Steemit::ECDSA::ecdsa_sign( $serialized_transaction, Math::BigInt->from_bytes( $bin_private_key ) );
    $i += 4;
@@ -515,23 +594,60 @@ sub _broadcast_transaction {
    $self->_request('network_broadcast_api','broadcast_transaction_synchronous',$transaction);
 }
 
+sub public_active_key {
+   my( $self ) = @_;
+   unless( $self->{public_active_key} ){
+      $self->{public_active_key} = $self->_private_key_to_adress( $self->plain_active_key );
+   }
+
+   return $self->{public_active_key}
+}
+
 sub public_posting_key {
    my( $self ) = @_;
    unless( $self->{public_posting_key} ){
-      require Steemit::ECDSA;
-      my $bin_pubkey = Steemit::ECDSA::get_compressed_public_key( Math::BigInt->from_bytes( $self->plain_posting_key ) );
-      #TODO use the STM from dynamic lookup in get_config or somewhere
-      require Crypt::RIPEMD160;
-      my $rip = Crypt::RIPEMD160->new;
-      $rip->reset;
-      $rip->add($bin_pubkey);
-      my $checksum = $rip->digest;
-      $rip->reset;
-      $rip->add('');
-      $self->{public_posting_key} = "STM".Steemit::Base58::encode_base58($bin_pubkey.substr($checksum,0,4));
+      $self->{public_posting_key} = $self->_private_key_to_adress( $self->plain_posting_key );
    }
 
    return $self->{public_posting_key}
+}
+
+sub _private_key_to_adress {
+   my( $self, $private_key ) = @_;
+   require Steemit::ECDSA;
+   my $bin_pubkey = Steemit::ECDSA::get_compressed_public_key( Math::BigInt->from_bytes( $private_key ) );
+   #TODO use the STM from dynamic lookup in get_config or somewhere
+   require Crypt::RIPEMD160;
+   my $rip = Crypt::RIPEMD160->new;
+   $rip->reset;
+   $rip->add($bin_pubkey);
+   my $checksum = $rip->digest;
+   $rip->reset;
+   $rip->add('');
+   return "STM".Steemit::Base58::encode_base58($bin_pubkey.substr($checksum,0,4));
+}
+
+sub _transform_private_key_active {
+   my( $self ) = @_;
+   die "active_key missing" unless( $self->active_key );
+
+   my $base58 = $self->active_key;
+
+   require Steemit::Base58;
+   my $binary = Steemit::Base58::decode_base58( $base58 );
+
+
+   my $version            = substr( $binary, 0, 1 );
+   my $binary_private_key = substr( $binary, 1, -4);
+   my $checksum           = substr( $binary, -4);
+   die "invalid version in wif ( 0x80 needed ) " unless $version eq  pack "H*", '80';
+
+   require Digest::SHA;
+   my $generated_checksum = substr( Digest::SHA::sha256( Digest::SHA::sha256( $version.$binary_private_key )), 0, 4 );
+
+   die "invalid checksum " unless $generated_checksum eq $checksum;
+
+   return $binary_private_key;
 }
 
 
@@ -567,12 +683,7 @@ sub _serialize_transaction_message  {
 
    $serialized_transaction .= pack 'V', $transaction->{ref_block_prefix};
 
-   require Date::Calc;
-   #2016-08-08T12:24:17
-   my @dates = split /\D/, $transaction->{expiration} ;
-   my $epoch = Date::Calc::Date_to_Time( @dates);
-
-   $serialized_transaction .= pack 'L', $epoch;
+   $serialized_transaction .= pack 'L', $self->steem_time_to_epoch( $transaction->{expiration} );
 
    $serialized_transaction .= pack "C", scalar( @{ $transaction->{operations} });
 
