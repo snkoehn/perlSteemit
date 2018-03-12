@@ -538,8 +538,62 @@ sub limit_order_cancel {
    }]);
 }
 
+=head2 get_open_orders(owner)
+
+will return you the current open orders for a person ( i.e you ;)
+
+   $VAR1 = [
+          {
+            'sell_price' => {
+                              'base' => '0.010 STEEM',
+                              'quote' => '0.030 SBD'
+                            },
+            'real_price' => '3.00000000000000000',
+            'seller' => 'hoffmann',
+            'for_sale' => 10,
+            'orderid' => 1234,
+            'id' => 1925750,
+            'rewarded' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+            'created' => '2018-03-10T07:51:39',
+            'expiration' => '2030-02-07T06:28:15'
+          }
+        ];
 
 
+=cut
+
+=head2 get_order_book($limit)
+
+will return you the current open market orders in the following format:
+
+     $VAR1 = {
+          'bids' => [
+                      {
+                        'real_price' => '1.02360056051331227',
+                        'steem' => 13559,
+                        'order_price' => {
+                                           'base' => '13.879 SBD',
+                                           'quote' => '13.559 STEEM'
+                                         },
+                        'sbd' => 13879,
+                        'created' => '2018-03-10T07:46:06'
+                      }
+                    ],
+          'asks' => [
+                      {
+                        'steem' => 162929,
+                        'real_price' => '1.02368409343715250',
+                        'order_price' => {
+                                           'base' => '449.500 STEEM',
+                                           'quote' => '460.146 SBD'
+                                         },
+                        'sbd' => 166787,
+                        'created' => '2018-03-10T07:25:21'
+                      }
+                    ]
+        };
+
+=cut
 
 
 sub _broadcast_transaction {

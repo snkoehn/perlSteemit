@@ -169,6 +169,7 @@ sub serialize_limit_order_create {
    return $serialized_operation;
 }
 
+
 #
 #let limit_order_cancel = new Serializer(
 #    "limit_order_cancel", {
