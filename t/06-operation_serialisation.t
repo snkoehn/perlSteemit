@@ -6,7 +6,7 @@ use warnings;
 use Test::More;
 use Data::Dumper;
 
-plan tests => 7;
+plan tests => 8;
 
 use_ok( 'Steemit::OperationSerializer' ) || print "Bail out!\n";
 
@@ -77,6 +77,20 @@ my $cancel_order_operation = [
 
 my $serialized_cancel_order = '060c77616c656f667768616c6573c9321700';
 is( unpack( "H*", $serializer->serialize_operation(@$cancel_order_operation)), $serialized_cancel_order, " cancel_order serialisation is correct");
+
+
+my $claim_reward_balance = [
+   claim_reward_balance => {
+      account      => 'your name',
+      reward_steem => "0.00 STEEM",
+      reward_sbd   => "0.00 SBD",
+      reward_vests => "0.000000 VESTS",
+   }
+];
+
+my $claim_reward_balance_serialized = '2709796f7572206e616d65000000000000000003535445454d00000000000000000000035342440000000000000000000000000656455354530000';
+
+is( unpack( "H*", $serializer->serialize_operation(@$claim_reward_balance)), $claim_reward_balance_serialized, " claim_reward_balance serialisation is correct");
 
 
 

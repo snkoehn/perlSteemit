@@ -538,6 +538,43 @@ sub limit_order_cancel {
    }]);
 }
 
+=head2 claim_reward_balance
+
+this method will let you redeem rewards you have pengind from the network.
+
+call it like this:
+
+   $steem->claim_reward_balance(
+      account      => 'your name',
+      reward_steem => "0.10 STEEM",
+      reward_sbd   => "0.20 SBD",
+      reward_vests => "0.300000 VESTS",
+   )
+
+the current amount you can clam can be gathered via the $steem->get_accounts(['your name'])
+call and will then be present in the fields:
+
+            'reward_steem_balance'   => '0.000 STEEM',
+            'reward_sbd_balance'     => '20.169 SBD',
+            'reward_vesting_balance' => '17071.539655 VESTS',
+
+
+=cut
+
+
+sub claim_reward_balance {
+   my( $self, %amounts ) = @_;
+
+   $self->_broadcast_transaction_active([
+      claim_reward_balance => {
+       account      => $amounts{account}      // $self->get_key_references([$self->public_active_key])->[0][0],
+       reward_steem => $amounts{reward_steem} // "0.000 STEEM",
+       reward_sbd   => $amounts{reward_sbd}   // "0.000 SBD",
+       reward_vests => $amounts{reward_vests} // "0.000000 VESTS",
+   }]);
+}
+
+
 =head2 get_open_orders(owner)
 
 will return you the current open orders for a person ( i.e you ;)

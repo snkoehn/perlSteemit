@@ -195,6 +195,27 @@ sub serialize_limit_order_cancel {
 }
 
 
+#account: string,
+#reward_steem: asset,
+#reward_sbd: asset,
+#reward_vests: asset
+sub serialize_claim_reward_balance {
+   my( $self, $operation_name, $operation_parameters ) = @_;
+
+   my $serialized_operation = '';
+   my $operation_id = $self->_index_of_operation($operation_name);
+   $serialized_operation .= pack "C", $operation_id;
+
+   $serialized_operation .= pack "C", length $operation_parameters->{'account'};
+   $serialized_operation .= pack "A*", $operation_parameters->{'account'};
+
+   $serialized_operation .= $self->_serialize_asset( $operation_parameters->{reward_steem} );
+   $serialized_operation .= $self->_serialize_asset( $operation_parameters->{reward_sbd} );
+   $serialized_operation .= $self->_serialize_asset( $operation_parameters->{reward_vests} );
+   return $serialized_operation;
+}
+
+
 
 sub _index_of_operation {
    my ( $self, $operation ) = @_;
