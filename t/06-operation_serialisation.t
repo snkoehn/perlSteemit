@@ -6,7 +6,7 @@ use warnings;
 use Test::More;
 use Data::Dumper;
 
-plan tests => 8;
+plan tests => 9;
 
 use_ok( 'Steemit::OperationSerializer' ) || print "Bail out!\n";
 
@@ -94,7 +94,18 @@ is( unpack( "H*", $serializer->serialize_operation(@$claim_reward_balance)), $cl
 
 
 
+my $transfer = [
+   transfer => {
+      from => 'hans',
+      to   => 'peter',
+      amount => '1.234 STEEM',
+      memo   => 'memorandum'
+   }
+];
 
+my $transfer_serialized = '020468616e73057065746572d20400000000000003535445454d00000a6d656d6f72616e64756d';
+
+is( unpack( "H*", $serializer->serialize_operation(@$transfer)), $transfer_serialized, " transfer serialisation is correct");
 
 
 

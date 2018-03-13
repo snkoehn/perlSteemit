@@ -215,6 +215,33 @@ sub serialize_claim_reward_balance {
    return $serialized_operation;
 }
 
+#from: string,
+#to: string,
+#amount: asset,
+#memo: string
+
+sub serialize_transfer {
+
+   my( $self, $operation_name, $operation_parameters ) = @_;
+
+   my $serialized_operation = '';
+   my $operation_id = $self->_index_of_operation($operation_name);
+   $serialized_operation .= pack "C", $operation_id;
+
+   $serialized_operation .= pack "C", length $operation_parameters->{'from'};
+   $serialized_operation .= pack "A*", $operation_parameters->{'from'};
+
+   $serialized_operation .= pack "C", length $operation_parameters->{'to'};
+   $serialized_operation .= pack "A*", $operation_parameters->{'to'};
+
+   $serialized_operation .= $self->_serialize_asset( $operation_parameters->{amount} );
+
+   $serialized_operation .= pack "C", length $operation_parameters->{'memo'};
+   $serialized_operation .= pack "A*", $operation_parameters->{'memo'};
+
+   return $serialized_operation;
+}
+
 
 
 sub _index_of_operation {

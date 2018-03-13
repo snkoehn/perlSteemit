@@ -633,6 +633,42 @@ will return you the current open market orders in the following format:
 =cut
 
 
+=head2 transfer
+
+allows you to transfer assets to other users
+
+   $steem->transfer(
+      from      => '<you>',
+      to        => 'reciving account',
+      amount    => "0.001 SBD",
+      memo      => 'some text',
+   )
+
+from is optional and will be filled with the user assiciated with your public active key
+memo can also be lenft blank
+
+amounst can either be in the form
+1.234 STEEM
+2.345 SBD
+
+VESTS cant be sent currently. please take care to have the correct amount of digits after the comma
+
+=cut
+
+sub transfer {
+   my( $self, %transfer ) = @_;
+
+   $self->_broadcast_transaction_active([
+      transfer => {
+         from   => $transfer{from}      // $self->get_key_references([$self->public_active_key])->[0][0],
+         to     => $transfer{to}        // die("to missing"),
+         amount => $transfer{amount}    // die("amount missing"),
+         memo   => $transfer{memo}      //'',
+   }]);
+}
+
+
+
 sub _broadcast_transaction {
    my( $self, @operations ) = @_;
 
